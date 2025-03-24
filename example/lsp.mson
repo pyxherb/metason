@@ -196,14 +196,9 @@ interface ProgressParams {
 	value: any;
 }
 
-interface HoverParamsPosition {
-	line: uinteger;
-	character: uinteger;
-}
-
 interface HoverParams {
 	textDocument: string; /** The text document's URI in string form */
-	position: HoverParamsPosition;
+	position: { line: uinteger; character: uinteger; };
 }
 
 interface HoverResult {
@@ -1687,58 +1682,6 @@ interface InitializeError {
 	retry: boolean;
 }
 
-interface ServerCapabilitiesWorkspaceFileOperations {
-	/**
-		* The server is interested in receiving didCreateFiles
-		* notifications.
-		*/
-	didCreate?: FileOperationRegistrationOptions;
-
-	/**
-		* The server is interested in receiving willCreateFiles requests.
-		*/
-	willCreate?: FileOperationRegistrationOptions;
-
-	/**
-		* The server is interested in receiving didRenameFiles
-		* notifications.
-		*/
-	didRename?: FileOperationRegistrationOptions;
-
-	/**
-		* The server is interested in receiving willRenameFiles requests.
-		*/
-	willRename?: FileOperationRegistrationOptions;
-
-	/**
-		* The server is interested in receiving didDeleteFiles file
-		* notifications.
-		*/
-	didDelete?: FileOperationRegistrationOptions;
-
-	/**
-		* The server is interested in receiving willDeleteFiles file
-		* requests.
-		*/
-	willDelete?: FileOperationRegistrationOptions;
-}
-
-interface ServerCapabilitiesWorkspace {
-	/**
-		* The server supports workspace folder.
-		*
-		* @since 3.6.0
-		*/
-	workspaceFolders?: WorkspaceFoldersServerCapabilities;
-
-	/**
-		* The server is interested in file notifications/requests.
-		*
-		* @since 3.16.0
-		*/
-	fileOperations?: ServerCapabilitiesWorkspaceFileOperations;
-}
-
 interface ServerCapabilities {
 
 	/**
@@ -1967,7 +1910,55 @@ interface ServerCapabilities {
 	/**
 	 * Workspace specific server capabilities
 	 */
-	workspace?: ServerCapabilitiesWorkspace;
+	workspace?: {
+		/**
+			* The server supports workspace folder.
+			*
+			* @since 3.6.0
+			*/
+		workspaceFolders?: WorkspaceFoldersServerCapabilities;
+
+		/**
+			* The server is interested in file notifications/requests.
+			*
+			* @since 3.16.0
+			*/
+		fileOperations?: {
+			/**
+				* The server is interested in receiving didCreateFiles
+				* notifications.
+				*/
+			didCreate?: FileOperationRegistrationOptions;
+
+			/**
+				* The server is interested in receiving willCreateFiles requests.
+				*/
+			willCreate?: FileOperationRegistrationOptions;
+
+			/**
+				* The server is interested in receiving didRenameFiles
+				* notifications.
+				*/
+			didRename?: FileOperationRegistrationOptions;
+
+			/**
+				* The server is interested in receiving willRenameFiles requests.
+				*/
+			willRename?: FileOperationRegistrationOptions;
+
+			/**
+				* The server is interested in receiving didDeleteFiles file
+				* notifications.
+				*/
+			didDelete?: FileOperationRegistrationOptions;
+
+			/**
+				* The server is interested in receiving willDeleteFiles file
+				* requests.
+				*/
+			willDelete?: FileOperationRegistrationOptions;
+		};
+	};
 
 	/**
 	 * Experimental server capabilities.
@@ -2486,34 +2477,6 @@ interface NotebookDocumentSyncClientCapabilities {
 	executionSummarySupport?: boolean;
 }
 
-interface NotebookDocumentSyncOptionsNotebookSelectorWithNotebook {
-	/**
-	* The notebook to be synced. If a string
-	* value is provided it matches against the
-	* notebook type. '*' matches every notebook.
-	*/
-	notebook: string | NotebookDocumentFilter;
-
-	/**
-	* The cells of the matching notebook to be synced.
-	*/
-	cells?: { language: string }[];
-}
-
-interface NotebookDocumentSyncOptionsNotebookSelectorWithCells {
-	/**
-	* The notebook to be synced. If a string
-	* value is provided it matches against the
-	* notebook type. '*' matches every notebook.
-	*/
-	notebook?: string | NotebookDocumentFilter;
-
-	/**
-	* The cells of the matching notebook to be synced.
-	*/
-	cells: { language: string }[];
-}
-
 /**
  * Options specific to a notebook plus its cells
  * to be synced to the server.
@@ -2533,7 +2496,31 @@ interface NotebookDocumentSyncOptions {
 	/**
 	 * The notebooks to be synced
 	 */
-	notebookSelector: (NotebookDocumentSyncOptionsNotebookSelectorWithNotebook | NotebookDocumentSyncOptionsNotebookSelectorWithCells)[];
+	notebookSelector: ({
+		/**
+		* The notebook to be synced. If a string
+		* value is provided it matches against the
+		* notebook type. '*' matches every notebook.
+		*/
+		notebook: string | NotebookDocumentFilter;
+
+		/**
+		* The cells of the matching notebook to be synced.
+		*/
+		cells?: { language: string }[];
+	} | {
+		/**
+		* The notebook to be synced. If a string
+		* value is provided it matches against the
+		* notebook type. '*' matches every notebook.
+		*/
+		notebook?: string | NotebookDocumentFilter;
+
+		/**
+		* The cells of the matching notebook to be synced.
+		*/
+		cells: { language: string }[];
+	})[];
 
 	/**
 	 * Whether save notification should be forwarded to
@@ -3307,26 +3294,6 @@ interface CodeLensWorkspaceClientCapabilities {
 	refreshSupport?: boolean;
 }
 
-interface FoldingRangeClientCapabilitiesFoldingRangeKind {
-	/**
-	* The folding range kind values the client supports. When this
-	* property exists the client also guarantees that it will
-	* handle values outside its set gracefully and falls back
-	* to a default value when unknown.
-	*/
-	valueSet?: FoldingRangeKind[];
-}
-
-interface FoldingRangeClientCapabilitiesFoldingRange {
-	/**
-	* If set, the client signals that it supports setting collapsedText on
-	* folding ranges to display custom labels instead of the default text.
-	*
-	* @since 3.17.0
-	*/
-	collapsedText?: boolean;
-}
-
 interface FoldingRangeClientCapabilities {
 	/**
 	 * Whether implementation supports dynamic registration for folding range
@@ -3355,13 +3322,29 @@ interface FoldingRangeClientCapabilities {
 	 *
 	 * @since 3.17.0
 	 */
-	foldingRangeKind? : FoldingRangeClientCapabilitiesFoldingRangeKind;
+	foldingRangeKind? : {
+		/**
+		* The folding range kind values the client supports. When this
+		* property exists the client also guarantees that it will
+		* handle values outside its set gracefully and falls back
+		* to a default value when unknown.
+		*/
+		valueSet?: FoldingRangeKind[];
+	};
 
 	/**
 	 * Specific options for the folding range.
 	 * @since 3.17.0
 	 */
-	foldingRange?: FoldingRangeClientCapabilitiesFoldingRange;
+	foldingRange?: {
+		/**
+		* If set, the client signals that it supports setting collapsedText on
+		* folding ranges to display custom labels instead of the default text.
+		*
+		* @since 3.17.0
+		*/
+		collapsedText?: boolean;
+	};
 }
 
 interface FoldingRangeOptions extends WorkDoneProgressOptions {
@@ -3489,27 +3472,6 @@ interface SelectionRange {
 	parent?: SelectionRange;
 }
 
-interface DocumentSymbolClientCapabilitiesSymbolKind {
-	/**
-	* The symbol kind values the client supports. When this
-	* property exists the client also guarantees that it will
-	* handle values outside its set gracefully and falls back
-	* to a default value when unknown.
-	*
-	* If this property is not present the client only supports
-	* the symbol kinds from `File` to `Array` as defined in
-	* the initial version of the protocol.
-	*/
-	valueSet?: SymbolKind[];
-}
-
-interface DocumentSymbolClientCapabilitiesTagSupport {
-	/**
-	 * The tags supported by the client.
-	 */
-	valueSet: SymbolTag[];
-}
-
 interface DocumentSymbolClientCapabilities {
 	/**
 	 * Whether document symbol supports dynamic registration.
@@ -3520,7 +3482,19 @@ interface DocumentSymbolClientCapabilities {
 	 * Specific capabilities for the `SymbolKind` in the
 	 * `textDocument/documentSymbol` request.
 	 */
-	symbolKind?: DocumentSymbolClientCapabilitiesSymbolKind;
+	symbolKind?: {
+		/**
+		* The symbol kind values the client supports. When this
+		* property exists the client also guarantees that it will
+		* handle values outside its set gracefully and falls back
+		* to a default value when unknown.
+		*
+		* If this property is not present the client only supports
+		* the symbol kinds from `File` to `Array` as defined in
+		* the initial version of the protocol.
+		*/
+		valueSet?: SymbolKind[];
+	};
 
 	/**
 	 * The client supports hierarchical document symbols.
@@ -3534,7 +3508,12 @@ interface DocumentSymbolClientCapabilities {
 	 *
 	 * @since 3.16.0
 	 */
-	tagSupport?: DocumentSymbolClientCapabilitiesTagSupport;
+	tagSupport?: {
+		/**
+		* The tags supported by the client.
+		*/
+		valueSet: SymbolTag[];
+	};
 
 	/**
 	 * The client supports an additional label presented in the UI when
@@ -3786,31 +3765,6 @@ interface SemanticTokensLegend {
 	tokenModifiers: string[];
 }
 
-interface SemanticTokensClientCapabilitiesRequestsRange {
-}
-
-interface SemanticTokensClientCapabilitiesRequestsDelta {
-	/**
-	* The client will send the `textDocument/semanticTokens/full/delta`
-	* request if the server provides a corresponding handler.
-	*/
-	delta?: boolean;
-}
-
-interface SemanticTokensClientCapabilitiesRequests {
-	/**
-	* The client will send the `textDocument/semanticTokens/range` request
-	* if the server provides a corresponding handler.
-	*/
-	range?: boolean | SemanticTokensClientCapabilitiesRequestsRange;
-
-	/**
-	* The client will send the `textDocument/semanticTokens/full` request
-	* if the server provides a corresponding handler.
-	*/
-	full?: boolean | SemanticTokensClientCapabilitiesRequestsDelta;
-}
-
 interface SemanticTokensClientCapabilities {
 	/**
 	 * Whether implementation supports dynamic registration. If this is set to
@@ -3830,7 +3784,25 @@ interface SemanticTokensClientCapabilities {
 	 * range provider the client might not render a minimap correctly or might
 	 * even decide to not show any semantic tokens at all.
 	 */
-	requests: SemanticTokensClientCapabilitiesRequests;
+	requests: {
+		/**
+		* The client will send the `textDocument/semanticTokens/range` request
+		* if the server provides a corresponding handler.
+		*/
+		range?: boolean | {};
+
+		/**
+		* The client will send the `textDocument/semanticTokens/full` request
+		* if the server provides a corresponding handler.
+		*/
+		full?: boolean | {
+			/**
+			* The client will send the `textDocument/semanticTokens/full/delta`
+			* request if the server provides a corresponding handler.
+			*/
+			delta?: boolean;
+		};
+	};
 
 	/**
 	 * The token types that the client supports.
@@ -3882,16 +3854,6 @@ interface SemanticTokensClientCapabilities {
 	augmentsSyntaxTokens?: boolean;
 }
 
-interface SemanticTokensOptionsRange {
-}
-
-interface SemanticTokensOptionsDelta {
-	/**
-	 * The server supports deltas for full documents.
-	 */
-	delta?: boolean;
-}
-
 interface SemanticTokensOptions extends WorkDoneProgressOptions {
 	/**
 	 * The legend used by the server
@@ -3902,12 +3864,17 @@ interface SemanticTokensOptions extends WorkDoneProgressOptions {
 	 * Server supports providing semantic tokens for a specific range
 	 * of a document.
 	 */
-	range?: boolean | SemanticTokensOptionsRange;
+	range?: boolean | {};
 
 	/**
 	 * Server supports providing semantic tokens for a full document.
 	 */
-	full?: boolean | SemanticTokensOptionsDelta;
+	full?: boolean | {
+		/**
+		* The server supports deltas for full documents.
+		*/
+		delta?: boolean;
+	};
 }
 
 interface SemanticTokensRegistrationOptions extends
@@ -4012,14 +3979,6 @@ interface SemanticTokensWorkspaceClientCapabilities {
 	refreshSupport?: boolean;
 }
 
-interface InlayHintClientCapabilitiesResolveSupport {
-
-	/**
-	 * The properties that a client can resolve lazily.
-	 */
-	properties: string[];
-}
-
 /**
  * Inlay hint client capabilities.
  *
@@ -4036,7 +3995,13 @@ interface InlayHintClientCapabilities {
 	 * Indicates which properties a client can resolve lazily on an inlay
 	 * hint.
 	 */
-	resolveSupport?: InlayHintClientCapabilitiesResolveSupport;
+	resolveSupport?: {
+
+		/**
+		* The properties that a client can resolve lazily.
+		*/
+		properties: string[];
+	};
 }
 
 /**
@@ -4501,123 +4466,6 @@ interface Moniker {
 	kind?: MonikerKind;
 }
 
-interface CompletionClientCapabilitiesCompletionItem {
-	/**
-	* Client supports snippets as insert text.
-	*
-	* A snippet can define tab stops and placeholders with `$1`, `$2`
-	* and `${3:foo}`. `$0` defines the final tab stop, it defaults to
-	* the end of the snippet. Placeholders with equal identifiers are
-	* linked, that is typing in one will update others too.
-	*/
-	snippetSupport?: boolean;
-
-	/**
-	* Client supports commit characters on a completion item.
-	*/
-	commitCharactersSupport?: boolean;
-
-	/**
-	* Client supports the follow content formats for the documentation
-	* property. The order describes the preferred format of the client.
-	*/
-	documentationFormat?: MarkupKind[];
-
-	/**
-	* Client supports the deprecated property on a completion item.
-	*/
-	deprecatedSupport?: boolean;
-
-	/**
-	* Client supports the preselect property on a completion item.
-	*/
-	preselectSupport?: boolean;
-
-	/**
-	* Client supports the tag property on a completion item. Clients
-	* supporting tags have to handle unknown tags gracefully. Clients
-	* especially need to preserve unknown tags when sending a completion
-	* item back to the server in a resolve call.
-	*
-	* @since 3.15.0
-	*/
-	tagSupport?: {
-		/**
-			* The tags supported by the client.
-			*/
-		valueSet: CompletionItemTag[];
-	};
-
-	/**
-	* Client supports insert replace edit to control different behavior if
-	* a completion item is inserted in the text or should replace text.
-	*
-	* @since 3.16.0
-	*/
-	insertReplaceSupport?: boolean;
-
-	/**
-	* Indicates which properties a client can resolve lazily on a
-	* completion item. Before version 3.16.0 only the predefined properties
-	* `documentation` and `detail` could be resolved lazily.
-	*
-	* @since 3.16.0
-	*/
-	resolveSupport?: {
-		/**
-			* The properties that a client can resolve lazily.
-			*/
-		properties: string[];
-	};
-
-	/**
-	* The client supports the `insertTextMode` property on
-	* a completion item to override the whitespace handling mode
-	* as defined by the client (see `insertTextMode`).
-	*
-	* @since 3.16.0
-	*/
-	insertTextModeSupport?: {
-		valueSet: InsertTextMode[];
-	};
-
-	/**
-	* The client has support for completion item label
-	* details (see also `CompletionItemLabelDetails`).
-	*
-	* @since 3.17.0
-	*/
-	labelDetailsSupport?: boolean;
-}
-
-interface CompletionClientCapabilitiesCompletionItemKind {
-	/**
-	* The completion item kind values the client supports. When this
-	* property exists the client also guarantees that it will
-	* handle values outside its set gracefully and falls back
-	* to a default value when unknown.
-	*
-	* If this property is not present the client only supports
-	* the completion items kinds from `Text` to `Reference` as defined in
-	* the initial version of the protocol.
-	*/
-	valueSet?: CompletionItemKind[];
-}
-
-interface CompletionClientCapabilitiesCompletionList {
-	/**
-	* The client supports the following itemDefaults on
-	* a completion list.
-	*
-	* The value lists the supported property names of the
-	* `CompletionList.itemDefaults` object. If omitted
-	* no properties are supported.
-	*
-	* @since 3.17.0
-	*/
-	itemDefaults?: string[];
-}
-
 interface CompletionClientCapabilities {
 	/**
 	 * Whether completion supports dynamic registration.
@@ -4628,9 +4476,108 @@ interface CompletionClientCapabilities {
 	 * The client supports the following `CompletionItem` specific
 	 * capabilities.
 	 */
-	completionItem?: CompletionClientCapabilitiesCompletionItem;
+	completionItem?: {
+		/**
+		* Client supports snippets as insert text.
+		*
+		* A snippet can define tab stops and placeholders with `$1`, `$2`
+		* and `${3:foo}`. `$0` defines the final tab stop, it defaults to
+		* the end of the snippet. Placeholders with equal identifiers are
+		* linked, that is typing in one will update others too.
+		*/
+		snippetSupport?: boolean;
 
-	completionItemKind?: CompletionClientCapabilitiesCompletionItemKind;
+		/**
+		* Client supports commit characters on a completion item.
+		*/
+		commitCharactersSupport?: boolean;
+
+		/**
+		* Client supports the follow content formats for the documentation
+		* property. The order describes the preferred format of the client.
+		*/
+		documentationFormat?: MarkupKind[];
+
+		/**
+		* Client supports the deprecated property on a completion item.
+		*/
+		deprecatedSupport?: boolean;
+
+		/**
+		* Client supports the preselect property on a completion item.
+		*/
+		preselectSupport?: boolean;
+
+		/**
+		* Client supports the tag property on a completion item. Clients
+		* supporting tags have to handle unknown tags gracefully. Clients
+		* especially need to preserve unknown tags when sending a completion
+		* item back to the server in a resolve call.
+		*
+		* @since 3.15.0
+		*/
+		tagSupport?: {
+			/**
+				* The tags supported by the client.
+				*/
+			valueSet: CompletionItemTag[];
+		};
+
+		/**
+		* Client supports insert replace edit to control different behavior if
+		* a completion item is inserted in the text or should replace text.
+		*
+		* @since 3.16.0
+		*/
+		insertReplaceSupport?: boolean;
+
+		/**
+		* Indicates which properties a client can resolve lazily on a
+		* completion item. Before version 3.16.0 only the predefined properties
+		* `documentation` and `detail` could be resolved lazily.
+		*
+		* @since 3.16.0
+		*/
+		resolveSupport?: {
+			/**
+				* The properties that a client can resolve lazily.
+				*/
+			properties: string[];
+		};
+
+		/**
+		* The client supports the `insertTextMode` property on
+		* a completion item to override the whitespace handling mode
+		* as defined by the client (see `insertTextMode`).
+		*
+		* @since 3.16.0
+		*/
+		insertTextModeSupport?: {
+			valueSet: InsertTextMode[];
+		};
+
+		/**
+		* The client has support for completion item label
+		* details (see also `CompletionItemLabelDetails`).
+		*
+		* @since 3.17.0
+		*/
+		labelDetailsSupport?: boolean;
+	};
+
+	completionItemKind?: {
+		/**
+		* The completion item kind values the client supports. When this
+		* property exists the client also guarantees that it will
+		* handle values outside its set gracefully and falls back
+		* to a default value when unknown.
+		*
+		* If this property is not present the client only supports
+		* the completion items kinds from `Text` to `Reference` as defined in
+		* the initial version of the protocol.
+		*/
+		valueSet?: CompletionItemKind[];
+	};
 
 	/**
 	 * The client supports to send additional context information for a
@@ -4652,18 +4599,19 @@ interface CompletionClientCapabilities {
 	 *
 	 * @since 3.17.0
 	 */
-	completionList?: CompletionClientCapabilitiesCompletionList;
-}
-
-interface CompletionOptionsCompletionItem {
-	/**
-	* The server has support for completion item label
-	* details (see also `CompletionItemLabelDetails`) when receiving
-	* a completion item in a resolve call.
-	*
-	* @since 3.17.0
-	*/
-	labelDetailsSupport?: boolean;
+	completionList?: {
+		/**
+		* The client supports the following itemDefaults on
+		* a completion list.
+		*
+		* The value lists the supported property names of the
+		* `CompletionList.itemDefaults` object. If omitted
+		* no properties are supported.
+		*
+		* @since 3.17.0
+		*/
+		itemDefaults?: string[];
+	};
 }
 
 /**
@@ -4710,7 +4658,16 @@ interface CompletionOptions extends WorkDoneProgressOptions {
 	 *
 	 * @since 3.17.0
 	 */
-	completionItem?: CompletionOptionsCompletionItem;
+	completionItem?: {
+		/**
+		* The server has support for completion item label
+		* details (see also `CompletionItemLabelDetails`) when receiving
+		* a completion item in a resolve call.
+		*
+		* @since 3.17.0
+		*/
+		labelDetailsSupport?: boolean;
+	};
 }
 
 interface CompletionRegistrationOptions
@@ -5166,13 +5123,6 @@ enum CompletionItemKind const: uinteger {
 	TypeParameter = 25
 }
 
-interface PublishDiagnosticsClientCapabilitiesTagSupport {
-	/**
-	* The tags supported by the client.
-	*/
-	valueSet: DiagnosticTag[];
-}
-
 interface PublishDiagnosticsClientCapabilities {
 	/**
 	 * Whether the clients accepts diagnostics with related information.
@@ -5185,7 +5135,12 @@ interface PublishDiagnosticsClientCapabilities {
 	 *
 	 * @since 3.15.0
 	 */
-	tagSupport?: PublishDiagnosticsClientCapabilitiesTagSupport;
+	tagSupport?: {
+		/**
+		* The tags supported by the client.
+		*/
+		valueSet: DiagnosticTag[];
+	};
 
 	/**
 	 * Whether the client interprets the version property of the
@@ -5578,35 +5533,6 @@ interface DiagnosticWorkspaceClientCapabilities {
 	refreshSupport?: boolean;
 }
 
-interface SignatureHelpClientCapabilitiesSignatureInformation {
-	/**
-	* Client supports the follow content formats for the documentation
-	* property. The order describes the preferred format of the client.
-	*/
-	documentationFormat?: MarkupKind[];
-
-	/**
-	* Client capabilities specific to parameter information.
-	*/
-	parameterInformation?: {
-		/**
-		* The client supports processing label offsets instead of a
-		* simple label string.
-		*
-		* @since 3.14.0
-		*/
-		labelOffsetSupport?: boolean;
-	};
-
-	/**
-	* The client supports the `activeParameter` property on
-	* `SignatureInformation` literal.
-	*
-	* @since 3.16.0
-	*/
-	activeParameterSupport?: boolean;
-}
-
 interface SignatureHelpClientCapabilities {
 	/**
 	 * Whether signature help supports dynamic registration.
@@ -5617,7 +5543,34 @@ interface SignatureHelpClientCapabilities {
 	 * The client supports the following `SignatureInformation`
 	 * specific properties.
 	 */
-	signatureInformation?: SignatureHelpClientCapabilitiesSignatureInformation;
+	signatureInformation?: {
+		/**
+		* Client supports the follow content formats for the documentation
+		* property. The order describes the preferred format of the client.
+		*/
+		documentationFormat?: MarkupKind[];
+
+		/**
+		* Client capabilities specific to parameter information.
+		*/
+		parameterInformation?: {
+			/**
+			* The client supports processing label offsets instead of a
+			* simple label string.
+			*
+			* @since 3.14.0
+			*/
+			labelOffsetSupport?: boolean;
+		};
+
+		/**
+		* The client supports the `activeParameter` property on
+		* `SignatureInformation` literal.
+		*
+		* @since 3.16.0
+		*/
+		activeParameterSupport?: boolean;
+	};
 
 	/**
 	 * The client supports to send additional context information for a
@@ -5821,32 +5774,6 @@ interface ParameterInformation {
 	documentation?: string | MarkupContent;
 }
 
-interface CodeActionClientCapabilitiesCodeActionLiteralSupportCodeActionKind {
-
-	/**
-	* The code action kind values the client supports. When this
-	* property exists the client also guarantees that it will
-	* handle values outside its set gracefully and falls back
-	* to a default value when unknown.
-	*/
-	valueSet: CodeActionKind[];
-}
-
-interface CodeActionClientCapabilitiesCodeActionLiteralSupport {
-	/**
-	* The code action kind is supported with the following value
-	* set.
-	*/
-	codeActionKind: CodeActionClientCapabilitiesCodeActionLiteralSupportCodeActionKind;
-}
-
-interface CodeActionClientCapabilitiesResolveSupport {
-	/**
-	* The properties that a client can resolve lazily.
-	*/
-	properties: string[];
-}
-
 interface CodeActionClientCapabilities {
 	/**
 	 * Whether code action supports dynamic registration.
@@ -5859,7 +5786,22 @@ interface CodeActionClientCapabilities {
 	 *
 	 * @since 3.8.0
 	 */
-	codeActionLiteralSupport?: CodeActionClientCapabilitiesCodeActionLiteralSupport;
+	codeActionLiteralSupport?: {
+		/**
+		* The code action kind is supported with the following value
+		* set.
+		*/
+		codeActionKind: {
+
+			/**
+			* The code action kind values the client supports. When this
+			* property exists the client also guarantees that it will
+			* handle values outside its set gracefully and falls back
+			* to a default value when unknown.
+			*/
+			valueSet: CodeActionKind[];
+		};
+	};
 
 	/**
 	 * Whether code action supports the `isPreferred` property.
@@ -5891,7 +5833,12 @@ interface CodeActionClientCapabilities {
 	 *
 	 * @since 3.16.0
 	 */
-	resolveSupport?: CodeActionClientCapabilitiesResolveSupport;
+	resolveSupport?: {
+		/**
+		* The properties that a client can resolve lazily.
+		*/
+		properties: string[];
+	};
 
 	/**
 	 * Whether the client honors the change annotations in
@@ -6543,35 +6490,6 @@ interface LinkedEditingRanges {
 	wordPattern?: string;
 }
 
-interface WorkspaceSymbolClientCapabilitiesSymbolKind {
-	/**
-	* The symbol kind values the client supports. When this
-	* property exists the client also guarantees that it will
-	* handle values outside its set gracefully and falls back
-	* to a default value when unknown.
-	*
-	* If this property is not present the client only supports
-	* the symbol kinds from `File` to `Array` as defined in
-	* the initial version of the protocol.
-	*/
-	valueSet?: SymbolKind[];
-}
-
-interface WorkspaceSymbolClientCapabilitiesTagSupport {
-	/**
-	* The tags supported by the client.
-	*/
-	valueSet: SymbolTag[];
-}
-
-interface WorkspaceSymbolClientCapabilitiesResolveSupport {
-	/**
-	* The properties that a client can resolve lazily. Usually
-	* `location.range`
-	*/
-	properties: string[];
-}
-
 interface WorkspaceSymbolClientCapabilities {
 	/**
 	 * Symbol request supports dynamic registration.
@@ -6582,7 +6500,19 @@ interface WorkspaceSymbolClientCapabilities {
 	 * Specific capabilities for the `SymbolKind` in the `workspace/symbol`
 	 * request.
 	 */
-	symbolKind?: WorkspaceSymbolClientCapabilitiesSymbolKind;
+	symbolKind?: {
+		/**
+		* The symbol kind values the client supports. When this
+		* property exists the client also guarantees that it will
+		* handle values outside its set gracefully and falls back
+		* to a default value when unknown.
+		*
+		* If this property is not present the client only supports
+		* the symbol kinds from `File` to `Array` as defined in
+		* the initial version of the protocol.
+		*/
+		valueSet?: SymbolKind[];
+	};
 
 	/**
 	 * The client supports tags on `SymbolInformation` and `WorkspaceSymbol`.
@@ -6590,7 +6520,12 @@ interface WorkspaceSymbolClientCapabilities {
 	 *
 	 * @since 3.16.0
 	 */
-	tagSupport?: WorkspaceSymbolClientCapabilitiesTagSupport;
+	tagSupport?: {
+		/**
+		* The tags supported by the client.
+		*/
+		valueSet: SymbolTag[];
+	};
 
 	/**
 	 * The client support partial workspace symbols. The client will send the
@@ -6599,7 +6534,13 @@ interface WorkspaceSymbolClientCapabilities {
 	 *
 	 * @since 3.17.0 - proposedState
 	 */
-	resolveSupport?: WorkspaceSymbolClientCapabilitiesResolveSupport;
+	resolveSupport?: {
+		/**
+		* The properties that a client can resolve lazily. Usually
+		* `location.range`
+		*/
+		properties: string[];
+	};
 }
 
 interface WorkspaceSymbolOptions extends WorkDoneProgressOptions {
@@ -7198,15 +7139,6 @@ enum MessageType const: uinteger {
 	Debug = 5
 }
 
-interface ShowMessageRequestClientCapabilitiesMessageActionItem {
-	/**
-	* Whether the client supports additional attributes which
-	* are preserved and sent back to the server in the
-	* request's response.
-	*/
-	additionalPropertiesSupport?: boolean;
-}
-
 /**
  * Show message request client capabilities
  */
@@ -7214,7 +7146,14 @@ interface ShowMessageRequestClientCapabilities {
 	/**
 	 * Capabilities specific to the `MessageActionItem` type.
 	 */
-	messageActionItem?: ShowMessageRequestClientCapabilitiesMessageActionItem;
+	messageActionItem?: {
+		/**
+		* Whether the client supports additional attributes which
+		* are preserved and sent back to the server in the
+		* request's response.
+		*/
+		additionalPropertiesSupport?: boolean;
+	};
 }
 
 interface ShowMessageRequestParams {

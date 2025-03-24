@@ -1,0 +1,14 @@
+#ifndef _CILVER_BASEDEFS_H_
+#define _CILVER_BASEDEFS_H_
+
+#include <peff/base/basedefs.h>
+
+#if METASONC_IS_BUILDING
+	#define METASONC_API PEFF_DLLEXPORT
+#else
+	#define METASONC_API PEFF_DLLIMPORT
+#endif
+
+#define METASONC_FORCEINLINE PEFF_FORCEINLINE
+
+#endif
